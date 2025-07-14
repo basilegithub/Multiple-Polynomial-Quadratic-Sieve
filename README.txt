@@ -32,7 +32,7 @@ Gaussian elimination:
 
 Block Lanczos:
 - "A Block Lanczos Algorithm for Finding Dependencies over GF(2)" by Peter L. Montgomery: https://scispace.com/pdf/a-block-lanczos-algorithm-for-finding-dependencies-over-gf-2-ezdu2qt0pp.pdf
-- "A modified block Lanczos algorithm with fewer vectors" by Emmanuel Thomé (really good): https://eprint.iacr.org/2016/329.pdf (really good)
+- "A modified block Lanczos algorithm with fewer vectors" by Emmanuel Thomé (really good): https://eprint.iacr.org/2016/329.pdf
 
 Wiedemann algorithm:
 - "SOLVING HOMOGENEOUS LINEAR EQUATIONSOVER GF(2) VIA BLOCK WIEDEMANN ALGORITHM" by Don Coppersmith: https://www.ams.org/journals/mcom/1994-62-205/S0025-5718-1994-1192970-7/S0025-5718-1994-1192970-7.pdf
@@ -74,6 +74,9 @@ Here are some points I consider working on at some point:
 	Namely, I use binary encoding of the blocks of vectors to compute matrix-vector product very efficiently. Then, for each scalar sequence, I compute
 	its generator using scalar Berlekamp-Massey algorithm, and use it to update the minimal polynomial of the matrix. I consider working some way to
 	compute the matrix generator of the matrix sequence through some algorithm (matrix Berlekamp-Massey or some other).
+
+- I have to make the linear algebra step more parallel. Eben though it is the fastest of the two main steps of the algorithm, no one likes to wait if it is
+	possible to faster.
 
 Here are the next steps:
 
