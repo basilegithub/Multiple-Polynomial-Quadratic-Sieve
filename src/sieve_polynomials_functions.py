@@ -38,15 +38,15 @@ def create_polynomial(n,prime_base,partial_solutions,bounds,target_log):
     
 # compute relevant quantities for efficiently initialize sieving
 def initialization(a,primes,residues,locations):
-    inverse_a, way_to_root = [], []
+    inverse_a, way_to_root = [0]*len(primes), [0]*len(primes)
     for i in range(len(primes)):
         if i in locations:
-            inverse_a.append(0)
-            way_to_root.append(0)
+            inverse_a[i] = 0
+            way_to_root[i] = 0
         else:
             tmp = invmod(a,primes[i])
-            inverse_a.append(tmp)
-            way_to_root.append(-2*residues[i]*tmp%primes[i])
+            inverse_a[i] = tmp
+            way_to_root[i] = -2*residues[i]*tmp%primes[i]
     return inverse_a, way_to_root
     
 # master function calling create_polynomial and initialization

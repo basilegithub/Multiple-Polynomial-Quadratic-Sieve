@@ -21,11 +21,10 @@ def sieve(L,poly_used,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,t
             for j in range(z,sieve_len,p):
                 sieve[j] += k
             z = (z+param[1][i])%p
-            for j in range(z,sieve_len,p):
-                sieve[j] += k
         else:
             z = (-poly_used[2]*invmod(tmp2,p)+L)%p
-            for j in range(z,sieve_len,p): sieve[j] += k
+        
+        for j in range(z,sieve_len,p): sieve[j] += k
          
     # identify candidates
     poly_eval = tmp3-tmp2*L+poly_used[2]

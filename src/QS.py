@@ -2,7 +2,7 @@
 
 ## import libraries
 
-import random, math, sys, time
+import math, time
 from datetime import datetime
 import log
 import parse_config

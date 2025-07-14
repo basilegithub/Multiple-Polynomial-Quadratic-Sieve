@@ -2,30 +2,6 @@
 
 from utils import invmod
 
-# The partial_relations list is always sorted
-# Find the index in which we could find another partial relation with the same large prime
-# It is implemented with a binary search
-def get_index(partial_relations, z):
-    a = 0
-    b = len(partial_relations)-1
-    c = (a+b) >> 1
-    while partial_relations[c][1] != z[1] and a <= b:
-        if partial_relations[c][1] > z[1]:
-            b = c-1
-        else : a = c+1
-        c = (a+b) >> 1
-    return c, a
-
-# Insert in the adequate index the partial relation with the new large prime
-def append_partial(index, value, n, z, partial_relations, possible_smooth):
-    partial_relations.insert(index,[value*value-n,z[1]])
-    possible_smooth.insert(index,value)
-
-# Use the two partial relations to generate one full relation
-def append_full(partial_relations, index, value, n, z, possible_smooth, smooth_number, relations):
-    relations.append(partial_relations[index][0]*(value*value-n)//(z[1]*z[1]))
-    smooth_number.append(value*possible_smooth[index]*invmod(partial_relations[index][1],n)%n)
-    
 # Finds cycles, aka relations, in the graph of the large primes partial relations
 def find_cycle(graph,init):
     path = [init[2]]
