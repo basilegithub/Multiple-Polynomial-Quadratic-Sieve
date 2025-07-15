@@ -2,7 +2,7 @@
 
 ## import libraries
 
-import math, time
+import math, time, os
 from datetime import datetime
 import log
 import parse_config
@@ -22,7 +22,7 @@ import compute_solutions
 
 ## Set path to find config file
 
-CONFIG_PATH = "C:\\Users\\basil\\OneDrive\\Bureau\\Git\\Quadratic Sieve Python\\config\\config.ini"
+CONFIG_PATH = os.path.abspath("../config/config.ini")
 
 ## display functions
     
@@ -126,7 +126,7 @@ def find_null_space_and_compute_factors(relations, smooth_number, primes, n, fla
 def QS(n):
     now = datetime.now()
     
-    LOG_PATH = "C:\\Users\\basil\\OneDrive\\Bureau\\Git\\Quadratic Sieve Python\\logs\\log_"+str(now.year)+str(now.month)+str(now.day)+"_"+str(now.hour)+str(now.minute)+str(now.second)+".txt"
+    LOG_PATH = os.path.abspath("../logs/log_"+str(now.year)+str(now.month)+str(now.day)+"_"+str(now.hour)+str(now.minute)+str(now.second)+".txt")
     
     parameters = parse_config.parse_config(CONFIG_PATH)
     
