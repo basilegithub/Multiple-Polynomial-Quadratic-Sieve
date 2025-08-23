@@ -10,7 +10,7 @@ from sieve_polynomials_functions import *
 from relations import *
 from utils import format_duration
 
-def sieve_and_batch_smooth(relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, a, b, poly_selected, coeff, logs, primes, param, sieve_len, skipped, prime_start, prod_primes, const_1, const_2, tmp1, tmp2, tmp3, block, to_batch, need_append, cycle_len, n):
+def sieve_and_batch_smooth(relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, a, b, poly_selected, coeff, logs, primes, param, sieve_len, skipped, prime_start, prod_primes, const_1, const_2, tmp1, tmp2, tmp3, block, to_batch, size_partials, connected_components, node_component, index_component, cycle_len, n):
     
     tmp_block = sieve.sieve(b,poly_selected,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3)
     to_batch += [abs(poly_selected[0]*i**2+tmp2*i+poly_selected[2]) for i in tmp_block]
@@ -27,7 +27,7 @@ def sieve_and_batch_smooth(relations, smooth_number, full_found, partial_relatio
                 tmp_smooth = smooth[tmp_index+i]
                 value = coeff1*block[tmp_index+i]+coeff2
                 
-                relations, smooth_number, partial_relations, possible_smooth, need_append, full_found, partial_found = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,need_append,cycle_len,n)
+                relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, connected_components, node_component, index_component = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,size_partials,connected_components,node_component,index_component,cycle_len,n)
                 
             tmp_index += coeff[z][2]
             
@@ -35,9 +35,9 @@ def sieve_and_batch_smooth(relations, smooth_number, full_found, partial_relatio
         coeff = []
         to_batch = []
         
-    return relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, block, coeff, to_batch, need_append
+    return relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, block, coeff, to_batch, graph, size_partials, connected_components, node_component, index_component
     
-def sieve_and_smooth(relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, a, b, poly_selected, logs, primes, param, sieve_len, skipped, prime_start, const_1, const_2, tmp1, tmp2, tmp3, need_append, cycle_len, n, prod_primes):
+def sieve_and_smooth(relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, a, b, poly_selected, logs, primes, param, sieve_len, skipped, prime_start, const_1, const_2, tmp1, tmp2, tmp3, size_partials, connected_components, node_component, index_component, cycle_len, n):
     smooth = sieve.sieve(b,poly_selected,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3)
     
     coeff1 = poly_selected[0]
@@ -48,16 +48,19 @@ def sieve_and_smooth(relations, smooth_number, full_found, partial_relations, pa
         tmp_smooth = find_smooth.smooth_test(coeff1*i**2+tmp2*i+coeff3,primes,const_1,const_2)
         value = coeff1*i+coeff2
         
-        relations, smooth_number, partial_relations, possible_smooth, need_append, full_found, partial_found = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,need_append,cycle_len,n)
+        relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, connected_components, node_component, index_component = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,size_partials,connected_components,node_component,index_component,cycle_len,n)
         
-    return relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, need_append
+    return relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, size_partials, connected_components, node_component, index_component
 
 def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_use_batch_smooth_test, n, LOG_PATH):
     log.write_log(LOG_PATH, "sieving...")
     log.write_log(LOG_PATH, "need to find at least "+str(len(primes)+10)+" relations")
     
     poly_selected, threshold, poly_index = [0,0,0,0], 0, 0
-    relations, smooth_number, partial_relations, possible_smooth, graph, cycle_len = [], [], [], [], [], [0]*10
+    relations, smooth_number, partial_relations, possible_smooth, graph, cycle_len = [], [], {}, {}, {}, [0]*10
+    size_partials, index_component = 0, 0
+    connected_components = {}
+    node_component = {}
     
     partial_found, full_found, skipped, last, sieve_len = 0, 0, 0, primes[-1], (b<<1)+1
     const_1 = const*primes[-1]
@@ -68,7 +71,6 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
     block = []
     coeff = []
     to_batch = []
-    need_append = True
     
     time_1 = datetime.now()
         
@@ -84,12 +86,12 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
         tmp2 = poly_selected[1]<<1
         
         if flag_use_batch_smooth_test:
-            relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, block, coeff, to_batch, need_append = sieve_and_batch_smooth(relations,smooth_number,full_found,partial_relations,partial_found,possible_smooth,graph,a,b,poly_selected,coeff,logs,primes,param,sieve_len,skipped,prime_start,prod_primes,const_1,const_2,tmp1,tmp2,tmp3,block,to_batch,need_append,cycle_len,n)
-        
+            relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, block, coeff, to_batch, graph, size_partials, connected_components, node_component, index_component = sieve_and_batch_smooth(relations,smooth_number,full_found,partial_relations,partial_found,possible_smooth,graph,a,b,poly_selected,coeff,logs,primes,param,sieve_len,skipped,prime_start,prod_primes,const_1,const_2,tmp1,tmp2,tmp3,block,to_batch,size_partials,connected_components,node_component,index_component,cycle_len,n)
+ 
         else:
-            relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, need_append = sieve_and_smooth(relations,smooth_number,full_found,partial_relations,partial_found,possible_smooth,graph,a,b,poly_selected,logs,primes,param,sieve_len,skipped,prime_start,const_1,const_2,tmp1,tmp2,tmp3,need_append,cycle_len,n,prod_primes)
+            relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, size_partials, connected_components, node_component, index_component = sieve_and_smooth(relations,smooth_number,full_found,partial_relations,partial_found,possible_smooth,graph,a,b,poly_selected,logs,primes,param,sieve_len,skipped,prime_start,const_1,const_2,tmp1,tmp2,tmp3,size_partials,connected_components,node_component,index_component,cycle_len,n)
                 
-        sys.stdout.write('\r'+str(len(smooth_number))+"/("+str(len(primes)+1)+"+10) relations found : full = "+str(full_found)+" ; partial = "+str(partial_found)+ " ("+str(len(possible_smooth))+")")
+        sys.stdout.write('\r'+str(len(smooth_number))+"/("+str(len(primes)+1)+"+10) relations found : full = "+str(full_found)+" ; partial = "+str(partial_found)+ " ("+str(size_partials)+")")
     print("\n")
     
     time_2 = datetime.now()
