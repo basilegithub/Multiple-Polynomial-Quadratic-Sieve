@@ -1,28 +1,38 @@
 Thanks for looking at this project.
 
-This is a project I started a few years ago, during the first half of 2019.
+This is a project I started a few years ago, in 2019-2020.
 I re-worked it recently to merge some versions, make it more readable, add comments, and get all the sources I used.
 
 
 ##### Introduction ######
 
-This project is a Python implementation of the Quadratic Sieve to factor integers.
+This project is a Python implementation of the General number field sieve to factor integers.
 
 Here are some detailed characteristics :
-- Multiple polynomials used for sieving
-- Double large prime variation used to collect relations
+- Kleinjung 2006 algorithm to find good polynomials
+- Double large prime variation used to collect relations for both algebraic and rational side
 - Batch smoothness test and naive smoothness test available
+- Union-find algorithm to detect cycles. Leveraging the graph structures (one central hub) to fasten the cycle finding when I know there is one.
 - Parallel sieving allowed
+- Parallel Polynomial search
 - gaussian elimination, block Lanczos, Wiedemann algorithms available for the linear algebra step (no parallelization available for now)
+- Lifting and Couveignes methods for computing the algebraic square root, no Montgomery algorithm available for now. (no parallelization for now)
 
 ##### Sources #####
 
 Overall algorithm:
 - "Prime numbers, a computational perspective" by Richard Crandall and Carl Pomerance (really good): https://link.springer.com/book/10.1007/0-387-28979-8
-- "The Quadratic Sieve Factoring Algorithm" by Eric Landquist: https://www.cs.virginia.edu/crab/QFS_Simple.pdf
+- "The Development of the Number Field Sieve" by many (really really good): https://link.springer.com/book/10.1007/BFb0091534
+- "A beginner's guide to the general number field sieve" by Michael Case: https://www.cs.umd.edu/~gasarch/TOPICS/factoring/NFSmadeeasy.pdf
 
-Multiple polynomials and double large primes
-- "Factoring Integers with Large-Prime Variations of the Quadratic Sieve" by Henk Boender and Herman J. J. te Riele: https://projecteuclid.org/journals/experimental-mathematics/volume-5/issue-4/Factoring-integers-with-large-prime-variations-of-the-quadratic-sieve/em/1047565445.pdf
+Kleinjung polynomials search algorithm:
+- "On polynomial selection for the number field sieve" by THORSTEN KLEINJUNG: https://www.ams.org/journals/mcom/2006-75-256/S0025-5718-06-01870-9/S0025-5718-06-01870-9.pdf
+
+Polynomial metric Ep_score:
+- "A new ranking function for polynomial selection in the number field sieve" by Nicolas David and Paul Zimmerman: https://inria.hal.science/hal-02151093v4/document
+
+Double large prime
+- "Factoring with two large primes" by Arjen K. Lenstra and Mark S. Manasse: https://scispace.com/pdf/factoring-with-two-large-primes-1lk9719aco.pdf
 
 Batch smoothness test:
 - "HOW TO FIND SMOOTH PARTS OF INTEGERS" by DANIEL J. BERNSTEIN: https://cr.yp.to/factorization/smoothparts-20040510.pdf
@@ -37,6 +47,9 @@ Block Lanczos:
 Wiedemann algorithm:
 - "SOLVING HOMOGENEOUS LINEAR EQUATIONSOVER GF(2) VIA BLOCK WIEDEMANN ALGORITHM" by Don Coppersmith: https://www.ams.org/journals/mcom/1994-62-205/S0025-5718-1994-1192970-7/S0025-5718-1994-1192970-7.pdf
 
+Square root algorithms
+- "Computing a square root for the number field sieve" by Jean-Marc Couveignes: https://www.math.u-bordeaux.fr/~jcouveig/publi/Cou94-2.pdf
+
 ##### running the algortihm #####
 
 When running the main.py file, the required argument is --n the number you want to factor.
@@ -50,9 +63,16 @@ I have defined a few parameters directly you can edit in the config file.
 - batch_smooth_test: If True, the batch smoothness test from Bernstein will be used. Otherwise, the naive (trial division from the prime factor base) approach will be used. Batch smoothness test is generally faster
 - gaussian_pivot: If True, gaussian elimination will ALWAYS be used in the linear algebra step. If you want to use block Lanczos of Wiedemann algorithms, this has to be set to False.
 - lanczos: If True, the block Lanczos algorithm will be used. If False, the Wiedemann algorithm will be used. No matter its value, if gaussian_pivot is True then gaussian elimination will be performed.
-- large_primes_constant: Define the constant that will be multiplied by the last prime in the factor base to obtain the bound for the single large primes. For the double large primes, the bound is this constant multiplied by the last prime in the factor base squared.
+- square_root_couveignes: If True, the Couveignes algorithm is run for the square root step. It requires many primes to be inert. If False, the lifting algorithm is used
+- large_primes_constant: Define the constant that will be multiplied by the last prime in the factor base to obtain the bound for the single large primes. For the double large primes, the bound is this constant multiplied by the last prime in the factor base squared. Both the algebraic and rational sides have the same bounds.
 - block_size: If Block Lanczos or Wiedemann algorithm are used, this sets the block size. In the Wiedemann algorithm, this is only used to compute many matrix-vector products at once, and not to compute the matrix generator of the matrix sequence you obtain.
-- NB_CPU: Sets the number of cpu used for sieving. One cpu is always kept as a "leader" that collects relations from the sievers, and the rest of the cpus sieve, test for smoothness, and send their candidate relations to the leader.
+- poly_search_nb_poly_coarse_eval: number of polynomials to be generated before doing precise ranking.
+- poly_search_nb_poly_precise_eval: number of polynomials to be kept for precise evaluation.
+- poly_search_prime_bound: maximum size of primes used in the polynomial generation
+- poly_search_nb_roots: number of roots to use in the Kleinjung polynomial generation algorithm. It is the l parameter in the original paper.
+- poly_search_multiplier: leading coefficient of generated polynomials is always a multiple of this multiplier.
+- NB_CPU_POLY_SELECTION: Sets the number of cpu used for running polynomial search. One cpu is always kept as a "leader" that collect polynomial candidates from the workers.
+- NB_CPU_SIEVE: Sets the number of cpu used for sieving. One cpu is always kept as a "leader" that collects relations from the sievers, and the rest of the cpus sieve, test for smoothness, and send their candidate relations to the leader.
 
 ##### General discussion #####
 
@@ -61,14 +81,15 @@ I viewed it as a good challenge to write good code, and get to know hard and for
 and got much more knowledgable on the subroutines thanks to this.
 
 Here are some points I consider working on at some point:
-- The data architecture for the large primes relations graph may not be optimal.
-	Right now it is an array of arrays. The first index always indicates the smallest large prime of the two.
-	The global array is always sorted according to the first value of its arrays.
-	This allows for efficient cycle search.
-	However, this leads to a very heavy code.
-	I consider giving a try to representing the graph in a dict of array, which would allow finding a large prime in the graph very fast.
-	However, I have to check the complecity of checking IF a large prime exists in the graph.
-	If this is as good as binary search, then I will leave it as it is now.
+- I still have some work to do to implement the state of the art polynomial search algorithms.
+	Right now this generates decent polynomials, but it seems that for high degree, eg 5 or 6)
+	there are some useful techniques (rational approximation of root, translations and rotations).
+
+- I have to implement the Montgomery algorithm for the algebraic square root computation.
+	For the small numbers I have used my algorithm on, it is not a bottleneck yet.
+
+- I have to optimize the Union-find algorithm for cycle detection, the version I have right now
+	does not seem to be perfect, as I still do many operations to connect two distinct connected components.
 
 - No matter how hard I tried, I am stuck on understanding the block Wiedemann algorithm. For now, the best I can do is the scalar one, with some optimizations.
 	Namely, I use binary encoding of the blocks of vectors to compute matrix-vector product very efficiently. Then, for each scalar sequence, I compute
@@ -83,6 +104,3 @@ Here are the next steps:
 - Some optimizations may be possible here and there, but I have already a big amount of work to get fast code. The next step on this topic is switching to C.
 	Python is intrisically limited on the topic of speed, as it is compiled on the fly. Just like this project, I have already done part of the C project
 	a while ago. I have to rework it to get something on the same level of quality as this Python version.
-
-- I will work on the General Number Field Sieve. Just like this project, I have already done part of the GNFS project a while ago. I have to rework it to get
-	something of the same level of quality as this QS algorithm.
