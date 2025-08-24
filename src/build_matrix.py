@@ -13,7 +13,7 @@ def build_sparse_matrix(relations,primes):
     line = []
     for i in range(len(relations)):
         if relations[i] < 0: line.append(i)
-    bin_matrix.append(line)
+    bin_matrix.append(set(line))
     for i in range(len(primes)):
         line = []
         for j in range(len(relations)):
@@ -23,57 +23,85 @@ def build_sparse_matrix(relations,primes):
                 tmp ^= 1
                 tmp2 *= primes[i]
             if tmp: line.append(j)
-        bin_matrix.append(line)
+        bin_matrix.append(set(line))
     while bin_matrix[-1] == []: del bin_matrix[-1]
     return bin_matrix
     
-# Reduce the sparse matrix, according to various rules:
-# 1. If a line contains only one non-zero value, then it is deleted as well as the column containing the corresponding non-zero value
-# 2. If a line contrains no non-zero value, then it is deleted
-# 3. We only keep 10 more columns than lines, to ensure we still have solutions while reducing the matrix size
+# Reduce the sparse matrix, according to the following rules:
+# 1. Delete empty rows, i.e. primes that do not impact square formation
+# 2. Delete singletons, i.e. row where only one relations has non zero value
+# 3. If there it is possible to delete some columns, delete columns in rows with as few elements as possible
+#   This maximises the chance to remove a row and thus reduce the computation cost of finding kernel vectors
 def reduce_sparse_matrix(matrix, relations, smooth):
     flag = True
     while flag:
         flag = False
-        i = 0
-        while i < len(matrix):
-            if len(matrix[i]) == 1:
-                flag = True
-                coeff = matrix[i][0]
-                for j in range(len(matrix)):
-                    if j != i:
-                        stored = -1
-                        for z in range(len(matrix[j])):
-                            if matrix[j][z] == coeff: stored = z
-                            elif matrix[j][z] > coeff: matrix[j][z] -= 1
-                        if stored > -1: del matrix[j][stored]
-                del relations[coeff]
-                del smooth[coeff]
-                del matrix[i]
-            else: i += 1
 
-        i = 0
-        while i < len(matrix):
-            if matrix[i] == []:
-                del matrix[i]
-                flag = True
-            else: i += 1
+        singleton_queue = [index for index, row in enumerate(matrix) if len(row) == 1]
+        active_cols = set(range(len(relations)))
 
-        length = len(matrix)+10
-        relations = relations[:length]
-        smooth = smooth[:length]
+        flag = len(singleton_queue)
 
-        for i in range(len(matrix)):
-            if matrix[i][0] >= length:
-                flag = True
-                matrix[i] = []
+        while singleton_queue:
+            index = singleton_queue.pop()
+
+            if len(matrix[index]) != 1: continue
+            coeff = next(iter(matrix[index]))
+
+            for j, row in enumerate(matrix):
+                if j != index and coeff in row:
+                        row.remove(coeff)
+                        if len(row) == 1: singleton_queue.append(j)
+
+            matrix[index].clear()
+            active_cols.discard(coeff)
+
+        matrix = [row for row in matrix if row]
+
+        relations = [relations[index] for index in sorted(active_cols)]
+        smooth = [smooth[index] for index in sorted(active_cols)]
+
+        mapping = {old: new for new, old in enumerate(sorted(active_cols))}
+        matrix = [{mapping[c] for c in row if c in mapping} for row in matrix]
+
+        active_cols = set(range(len(relations)))
+        target_n_cols = len(matrix)+10
+        to_delete = len(relations) - target_n_cols
+        current_len_row = 2
+
+        while to_delete >= current_len_row-1:
+
+            index = -1
+            for i in range(len(matrix)):
+                if len(matrix[i]) == current_len_row:
+                    flag = True
+                    index = i
+                    break
+
+            if index != -1:
+                for coeff in matrix[index]:
+                    active_cols.discard(coeff)
+
+                    for j, row in enumerate(matrix):
+                        if j != index and coeff in row:
+                            row.discard(coeff)
+
+                to_delete -= current_len_row-1
+
+                matrix[index].clear()
+
             else:
-                for j in range(len(matrix[i])):
-                    if matrix[i][-j-1] < length:
-                        if j > 0:
-                            flag = True
-                            matrix[i] = matrix[i][:len(matrix[i])-j]
-                        break
+                current_len_row += 1
+
+        matrix = [row for row in matrix if row]
+
+        relations = [relations[index] for index in sorted(active_cols)]
+        smooth = [smooth[index] for index in sorted(active_cols)]
+
+        mapping = {old: new for new, old in enumerate(sorted(active_cols))}
+        matrix = [{mapping[c] for c in row if c in mapping} for row in matrix]
+
+    return matrix, relations, smooth
                         
 # Build the dense binary matrix by computing explicitely every A[i][j]
 def build_dense_matrix(relations,primes):

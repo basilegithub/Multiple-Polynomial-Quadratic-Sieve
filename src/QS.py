@@ -72,11 +72,11 @@ def initialize(n):
 def find_null_space_and_compute_factors(relations, smooth_number, primes, n, flag_gaussian_pivot, flag_lanczos, BLOCK_SIZE, LOG_PATH):
     if not flag_gaussian_pivot:
     
-        bin_matrix = build_sparse_matrix(relations,primes)
+        bin_matrix = build_sparse_matrix(relations, primes)
         
         log.write_log(LOG_PATH, "matrix created "+str(len(primes)+1)+"x"+str(len(smooth_number))+" solving...")
     
-        reduce_sparse_matrix(bin_matrix,relations,smooth_number)
+        bin_matrix, relations, smooth_number = reduce_sparse_matrix(bin_matrix, relations, smooth_number)
         e = (len(bin_matrix)+10)
         relations = relations[0:e]
         smooth_number = smooth_number[0:e]
@@ -99,6 +99,7 @@ def find_null_space_and_compute_factors(relations, smooth_number, primes, n, fla
                 if flag_lanczos:
                     vector = compute_solutions.convert_to_binary_lanczos(vector, smooth_number)
                 x,y = compute_solutions.compute_solution(relations,smooth_number,vector,n,primes)
+                print(math.gcd(x-y,n), math.gcd(x+y,n))
                 if x != y and math.gcd(x-y,n) != 1 and math.gcd(x+y,n) != 1:
                     print_final_message(x, y, n, time_1, LOG_PATH)
                     return str(time.localtime()[3])+":"+str(time.localtime()[4])+":"+str(time.localtime()[5]), math.gcd(x-y,n), math.gcd(x+y,n)
@@ -151,9 +152,5 @@ def QS(n):
     
     else:
         relations, smooth_number = multi_cpu_sieve.find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_use_batch_smooth_test, n, LOG_PATH, NB_CPU)
-    
-    e = (len(primes)+11)
-    relations = relations[0:e]
-    smooth_number = smooth_number[0:e]
     
     return find_null_space_and_compute_factors(relations,smooth_number,primes,n,flag_gaussian_pivot, flag_lanczos,BLOCK_SIZE,LOG_PATH)

@@ -102,13 +102,13 @@ def block_lanczos(B, base_size, nb_relations, N, LOG_PATH):
     Z = concatenate(x,V,N)
     matrix = transpose_dense(sparse_multiply(B, Z), 2*N)
     Z = transpose_dense(Z, 2*N)
-    matrix, Z = solve(matrix,Z,len(B))
+    matrix, Z = solve(matrix, Z, len(B))
     solutions = []
     for i in range(len(matrix)):
         if matrix[i] == 0 and Z[i] != 0 and Z[i] not in solutions:
             solutions.append(Z[i])
     if len(solutions) == 0:
-        solutions = block_lanczos(B,N<<1)
+        solutions = block_lanczos(B,N<<1,LOG_PATH)
     return solutions
     
 # Performs gaussian elimination
