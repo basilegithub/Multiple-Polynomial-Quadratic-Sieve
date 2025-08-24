@@ -31,7 +31,7 @@ def build_sparse_matrix(relations,primes):
 # 1. If a line contains only one non-zero value, then it is deleted as well as the column containing the corresponding non-zero value
 # 2. If a line contrains no non-zero value, then it is deleted
 # 3. We only keep 10 more columns than lines, to ensure we still have solutions while reducing the matrix size
-def reduce_sparse_matrix(matrix,relations,smooth):
+def reduce_sparse_matrix(matrix, relations, smooth):
     flag = True
     while flag:
         flag = False
@@ -51,14 +51,18 @@ def reduce_sparse_matrix(matrix,relations,smooth):
                 del smooth[coeff]
                 del matrix[i]
             else: i += 1
-            
+
         i = 0
         while i < len(matrix):
             if matrix[i] == []:
                 del matrix[i]
                 flag = True
             else: i += 1
+
         length = len(matrix)+10
+        relations = relations[:length]
+        smooth = smooth[:length]
+
         for i in range(len(matrix)):
             if matrix[i][0] >= length:
                 flag = True
