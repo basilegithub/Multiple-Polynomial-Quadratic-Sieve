@@ -71,9 +71,6 @@ I tried overall to use as few exernal libraries as possible. While this makes th
 I have a Python implementation of the GNFS algorithm on my Github.
 
 Here are some points I consider working on at some point:
-- The implementation of the Union-find algorithm for might not be optimal.
-	Joining two connected componentes takes O(n) times.
-	I have seen how to modify it, I just have to take the time to implement it.
 
 - No matter how hard I tried, I am stuck on understanding the block Wiedemann algorithm.
 	For now, the best I can do is the scalar one, with some optimizations. Namely, I
