@@ -10,9 +10,7 @@ from utils import *
 import mono_cpu_sieve
 import multi_cpu_sieve
 import generate_primes
-import sieve
 from sieve_polynomials_functions import *
-import find_smooth
 from relations import *
 from build_matrix import *
 from gaussian_elimination import *
