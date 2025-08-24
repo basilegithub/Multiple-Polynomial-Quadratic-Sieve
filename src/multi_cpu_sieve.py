@@ -116,9 +116,8 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
     log.write_log(LOG_PATH, "need to find at least "+str(len(primes)+10)+" relations")
     
     relations, smooth_number, partial_relations, possible_smooth, graph, cycle_len = [], [], {}, {}, {}, [0]*10
-    size_partials, index_component = 0, 0
-    connected_components = {}
-    node_component = {}
+    size_partials = 0
+    parent = {}
     
     partial_found, full_found, skipped, last, sieve_len = 0, 0, 0, primes[-1], (b<<1)+1
     const_1 = const*primes[-1]
@@ -156,7 +155,7 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
             else:
                 tmp_smooth = ["large", rel[3], rel[4]]
                 
-            relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, connected_components, node_component, index_component = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,size_partials,connected_components,node_component,index_component,cycle_len,n)
+            relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, parent = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,size_partials,parent,cycle_len,n)
 
         except:
             pass

@@ -77,7 +77,7 @@ def combine(relations,smooth,partial_relations,partial_smooth,path,value,n):
     relations.append(relation)
     
 # Master function, keeps the partial_relations and possible_smooth lists sorted, find the matching large primes, create the full relations from large primes
-def handle_possible_smooth(value, tmp_smooth, full_found, partial_found, relations, smooth_number, partial_relations, possible_smooth, graph, size_partials, connected_components, node_component, index_component, cycle_len, n):
+def handle_possible_smooth(value, tmp_smooth, full_found, partial_found, relations, smooth_number, partial_relations, possible_smooth, graph, size_partials, parent, cycle_len, n):
     if tmp_smooth[0] == True:
         full_found += 1
         relations.append(value*value-n)
@@ -95,98 +95,100 @@ def handle_possible_smooth(value, tmp_smooth, full_found, partial_found, relatio
 
         # if this is the first partial relation we see, there is none to combine it with
         elif not bool(partial_relations):
-            pair = [value*value-n, tmp_smooth[1], tmp_smooth[2]]
-            
-            partial_relations[tmp_smooth[1]] = {}
-            partial_relations[tmp_smooth[1]][tmp_smooth[2]] = pair
-            
-            possible_smooth[tmp_smooth[1]] = {}
-            possible_smooth[tmp_smooth[1]][tmp_smooth[2]] = value
-            
-            graph[tmp_smooth[1]] = [tmp_smooth[2]]
-            graph[tmp_smooth[2]] = [tmp_smooth[1]]
+            small_p, big_p = tmp_smooth[1], tmp_smooth[2]
 
-            connected_components[index_component] = set((tmp_smooth[1], tmp_smooth[2]))
-            node_component[tmp_smooth[1]] = index_component
-            node_component[tmp_smooth[2]] = index_component
+            pair = [value*value-n, small_p, big_p]
+            
+            partial_relations[small_p] = {}
+            partial_relations[small_p][big_p] = pair
+            
+            possible_smooth[small_p] = {}
+            possible_smooth[small_p][big_p] = value
+            
+            graph[small_p] = [big_p]
+            graph[big_p] = [small_p]
+
+            parent[small_p] = small_p
+            parent[big_p] = small_p
 
             size_partials += 1
-            index_component += 1
         else:
-            pair = [value*value-n, tmp_smooth[1], tmp_smooth[2]]
+            small_p, big_p = tmp_smooth[1], tmp_smooth[2]
+            pair = [value*value-n, small_p, tmp_smooth[2]]
             
-            flag_small_prime = tmp_smooth[1] in graph
+            flag_small_prime = small_p in graph
 
             if not flag_small_prime: # if we have never seen the small prime before
-                graph[tmp_smooth[1]] = [tmp_smooth[2]]
+                graph[small_p] = [big_p]
                 
-                partial_relations[tmp_smooth[1]] = {}
-                partial_relations[tmp_smooth[1]][tmp_smooth[2]] = pair
+                partial_relations[small_p] = {}
+                partial_relations[small_p][big_p] = pair
 
-                possible_smooth[tmp_smooth[1]] = {}
-                possible_smooth[tmp_smooth[1]][tmp_smooth[2]] = value
+                possible_smooth[small_p] = {}
+                possible_smooth[small_p][big_p] = value
                 
-                flag_big_prime = tmp_smooth[2] in graph
+                flag_big_prime = big_p in graph
 
                 if flag_big_prime: # if we have seen the big prime before
-                    graph[tmp_smooth[2]].append(tmp_smooth[1])
+                    graph[big_p].append(small_p)
 
-                    connected_components[node_component[tmp_smooth[2]]].add(tmp_smooth[1])
-                    node_component[tmp_smooth[1]] = node_component[tmp_smooth[2]]
+                    parent[small_p] = parent[big_p]
 
                 else: # if we have not seen the big prime before
-                    graph[tmp_smooth[2]] = [tmp_smooth[1]]
+                    graph[big_p] = [small_p]
 
-                    connected_components[index_component] = set((tmp_smooth[1], tmp_smooth[2]))
-                    node_component[tmp_smooth[1]] = index_component
-                    node_component[tmp_smooth[2]] = index_component
-
-                    index_component += 1
+                    parent[small_p] = small_p
+                    parent[big_p] = small_p
                
             # If the smallest prime has already been seen
             else:
-                flag_big_prime = tmp_smooth[2] in graph
+                flag_big_prime = big_p in graph
                 
                 # If we have not seen the big prime before
                 if not flag_big_prime:
-                    graph[tmp_smooth[1]].append(tmp_smooth[2])
-                    graph[tmp_smooth[2]] = [tmp_smooth[1]]
+                    graph[small_p].append(big_p)
+                    graph[big_p] = [small_p]
 
-                    connected_components[node_component[tmp_smooth[1]]].add(tmp_smooth[2])
-                    node_component[tmp_smooth[2]] = node_component[tmp_smooth[1]]
+                    parent[big_p] = parent[small_p]
     
-                    if tmp_smooth[1] not in partial_relations:
-                        partial_relations[tmp_smooth[1]] = {}
-                        possible_smooth[tmp_smooth[1]] = {}
+                    if small_p not in partial_relations:
+                        partial_relations[small_p] = {}
+                        possible_smooth[small_p] = {}
 
-                    partial_relations[tmp_smooth[1]][tmp_smooth[2]] = pair
-                    possible_smooth[tmp_smooth[1]][tmp_smooth[2]] = value
+                    partial_relations[small_p][big_p] = pair
+                    possible_smooth[small_p][big_p] = value
                     size_partials += 1
 
                 # If the largest prime has been seen, ie if both primes have already been seen
                 else:
-                    if node_component[tmp_smooth[1]] != node_component[tmp_smooth[2]]:
-                        graph[tmp_smooth[1]].append(tmp_smooth[2])
-                        graph[tmp_smooth[2]].append(tmp_smooth[1])
+                    parent_small_p = parent[small_p]
+                    while parent[parent_small_p] != parent_small_p:
+                        parent[parent_small_p], parent_small_p = parent[parent[parent_small_p]], parent[parent_small_p]
 
-                        connected_components[node_component[tmp_smooth[1]]] = connected_components[node_component[tmp_smooth[1]]].union(connected_components[node_component[tmp_smooth[2]]])
+                    parent_big_p = parent[big_p]
+                    while parent[parent_big_p] != parent_big_p:
+                        parent[parent_big_p], parent_big_p = parent[parent[parent_big_p]], parent[parent_big_p]
+                        
 
-                        for node in connected_components[node_component[tmp_smooth[2]]]:
-                            node_component[node] = node_component[tmp_smooth[1]]
+                    if parent_small_p != parent_big_p:
+                        graph[small_p].append(big_p)
+                        graph[big_p].append(small_p)
 
-                        if tmp_smooth[1] not in partial_relations:
-                            partial_relations[tmp_smooth[1]] = {}
-                            possible_smooth[tmp_smooth[1]] = {}
+                        parent[parent_big_p] = parent_small_p
 
-                        partial_relations[tmp_smooth[1]][tmp_smooth[2]] = pair
-                        possible_smooth[tmp_smooth[1]][tmp_smooth[2]] = value
+                        if small_p not in partial_relations:
+                            partial_relations[small_p] = {}
+                            possible_smooth[small_p] = {}
+
+                        partial_relations[small_p][big_p] = pair
+                        possible_smooth[small_p][big_p] = value
 
                         size_partials += 1
                     else:
-                        path_cycle = find_cycle(graph,[tmp_smooth[1], tmp_smooth[2]])
+                        path_cycle = find_cycle(graph,[small_p, big_p])
                         if len(path_cycle) < 11: cycle_len[len(path_cycle)-2] += 1
                         else: cycle_len[-1] += 1
                         combine(relations,smooth_number,partial_relations,possible_smooth,path_cycle,value,n)
                         partial_found += 1
                 
-    return relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, connected_components, node_component, index_component
+    return relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, parent
