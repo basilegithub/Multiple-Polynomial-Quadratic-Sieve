@@ -33,4 +33,4 @@ def compute_solution(relation_set, smooth, z, n, primes):
     for k in range(1, len(vector_y)):
         y *= pow(primes[k-1], vector_y[k]>>1, n)
         y %= n
-    return x,y
+    return x, y

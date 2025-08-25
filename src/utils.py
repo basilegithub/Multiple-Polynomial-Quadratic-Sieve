@@ -25,20 +25,25 @@ def isqrt(n):
             S = s*s
         if (S<<2) < n: b, a = (s<<2), n
         else: b, a = s<<1, n
+        
     while b < a: a, b = b, (b*b+n)//(b<<1)
+
     return a
 
 # Computes a^(-1) (mod m)
 def invmod(a, m):
     (r, u, R, U) = (a, 1, m, 0)
+
     while R:
         q = r//R
         (r, u, R, U) = (R, U, r - q *R, u - q*U)
+
     return u%m
     
 def compute_legendre_character(a, n):
     a = a%n
     t = 1
+
     while a:
         while not a&1:
             a = a>>1
@@ -47,6 +52,7 @@ def compute_legendre_character(a, n):
         if a%4 == n%4 and n%4 == 3: t = -t
         a = a%n
     if n == 1: return t
+
     return 0
         
 # Compute x such that x² = n (mod p)
@@ -54,22 +60,28 @@ def compute_sqrt_mod_p(n, p):
     n %= p
     if n == 1 : return 1
     P = p-1
+
     z = int(random.randint(2, P))
     while compute_legendre_character(z, p) != -1:
         z = int(random.randint(2, P))
+
     r = 0
     while not P&1:
         P >>= 1
         r += 1
     s = P
+
     generator = pow(z, s, p)
     lbd = pow(n, s, p)
     omega = pow(n, (s+1)>>1, p)
+
     while True:
         if not lbd: return 0
         if lbd == 1: return omega
+
         for m in range(1, r):
             if pow(lbd, 1<<m, p)==1: break
+
         tmp = pow(2, r-m-1, p-1)
         lbd = lbd*pow(generator, tmp<<1, )%p
         omega = omega*pow(generator, tmp, p)%p
@@ -77,8 +89,10 @@ def compute_sqrt_mod_p(n, p):
 # Use chinese remainder theorem to generate some sieve polynomial coefficients
 def CRT(moduli, a, second_part):
     sum = 0
+
     for i in range(len(moduli)):
         sum = (sum+moduli[i]*second_part[i])%a
+
     return sum      
     
 # Fast but not always true Fermat primality test
@@ -93,10 +107,12 @@ def poly_div(poly_a, poly_b):
     quotient = 0
     deg_a = poly_a.bit_length() - 1
     deg_b = poly_b.bit_length() - 1
+
     for j in reversed(range(deg_a - deg_b + 1)):
         if remainder & (1 << (deg_b + j)):
             quotient |= (1 << j)
             remainder ^= (poly_b << j)
+
     return quotient, remainder
 
 def poly_prod(poly_a, poly_b):

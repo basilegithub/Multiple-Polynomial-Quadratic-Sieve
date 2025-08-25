@@ -128,4 +128,4 @@ def solve(matrix, block, nb_relations):
                 matrix[z] ^= matrix[k-1]
                 block[z] ^= block[k-1]
 
-    return matrix,block
+    return matrix, block

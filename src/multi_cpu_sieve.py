@@ -30,7 +30,7 @@ def siever_batch(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len, skippe
             block += tmp_block
             
             while poly_index < threshold:
-                poly_selected[1],poly_selected[2] = find_next_poly(poly_index, moduli, n, poly_selected, needed)
+                poly_selected[1], poly_selected[2] = find_next_poly(poly_index, moduli, n, poly_selected, needed)
                 tmp2 = poly_selected[1]<<1
                 poly_index += 1
                 
