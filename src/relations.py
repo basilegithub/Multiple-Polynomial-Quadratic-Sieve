@@ -28,7 +28,7 @@ def DFS(graph,init):
     tmp = graph[init[1]]
     
     if init[0] in tmp:
-        return path+[init[0]]
+        return path + [init[0]]
     
     neighbors += tmp
     
@@ -47,7 +47,7 @@ def DFS(graph,init):
         neighbors = [next_node]
 
         if init[0] in graph[next_node]:
-            return path+[init[0]]
+            return path + [init[0]]
 
         parent = stack[-1][0]
 
@@ -62,17 +62,18 @@ def DFS(graph,init):
 # Given a cycle, constructs the full relations
 # The graph is always acyclic: when we find a new cycle, the partial relation we just found is not added
 # Thus, one new partial relation can only create one cycle at most
-def combine(relations,smooth,partial_relations,partial_smooth,path,value,n):
+def combine(relations, smooth, partial_relations, partial_smooth, path, value, n):
     smoo,relation = value, value*value-n
     for i in range(len(path)-1):
-        firstp, secondp = min(path[i],path[i+1]), max(path[i],path[i+1])
+        firstp, secondp = min(path[i], path[i+1]), max(path[i], path[i+1])
         
         smoo = smoo*partial_smooth[firstp][secondp]%n
         relation *= partial_relations[firstp][secondp][0]
         
     for p in path:
-        smoo = smoo*invmod(p,n)%n
+        smoo = smoo*invmod(p, n)%n
         relation //= (p*p)
+
     smooth.append(smoo)
     relations.append(relation)
     
@@ -86,7 +87,7 @@ def handle_possible_smooth(value, tmp_smooth, full_found, partial_found, relatio
     elif tmp_smooth[0] == "large":
         if tmp_smooth[1] == tmp_smooth[2]:
             p = tmp_smooth[1]
-            smoo = value*invmod(p,n)%n
+            smoo = value*invmod(p, n)%n
             relation = (value*value-n)//(p*p)
 
             smooth_number.append(smoo)
@@ -188,7 +189,7 @@ def handle_possible_smooth(value, tmp_smooth, full_found, partial_found, relatio
                         path_cycle = find_cycle(graph,[small_p, big_p])
                         if len(path_cycle) < 11: cycle_len[len(path_cycle)-2] += 1
                         else: cycle_len[-1] += 1
-                        combine(relations,smooth_number,partial_relations,possible_smooth,path_cycle,value,n)
+                        combine(relations, smooth_number, partial_relations, possible_smooth, path_cycle, value, n)
                         partial_found += 1
                 
     return relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, parent

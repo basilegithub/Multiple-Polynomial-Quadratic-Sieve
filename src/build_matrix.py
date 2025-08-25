@@ -8,7 +8,7 @@ from utils import lowest_set_bit
 # For large numbers to factor, this reduces that memory requirement for the linear algebra part
 # Each prime in the factor base corresponds to one line
 # Each relation corresponds to one column
-def build_sparse_matrix(relations,primes):
+def build_sparse_matrix(relations, primes):
     bin_matrix = []
     line = []
     for i in range(len(relations)):
@@ -104,7 +104,7 @@ def reduce_sparse_matrix(matrix, relations, smooth):
     return matrix, relations, smooth
                         
 # Build the dense binary matrix by computing explicitely every A[i][j]
-def build_dense_matrix(relations,primes):
+def build_dense_matrix(relations, primes):
     bin_matrix = []
     for rel in relations:
         line = [0]*(len(primes)+1)

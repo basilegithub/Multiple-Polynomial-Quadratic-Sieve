@@ -17,15 +17,18 @@ def batch_smooth_test(candidates, prod_primes, cst_1, cst_2):
         e += 1
         
     # build the product tree
-    tmp = [i for i in candidates]
+    tmp = candidates.copy()
     prod_tree = [tmp]
     
     while len(prod_tree[-1]) > 1:
         line = [0]*(len(prod_tree[-1])>>1)
+
         for i in range(1,len(prod_tree[-1]),2):
             tmp = prod_tree[-1][i]*prod_tree[-1][i-1]
+
             if tmp <= prod_primes: line[i>>1] = tmp
             else: line[i>>1] = prod_primes+1
+
         if len(prod_tree[-1]) & 1: line.append(prod_tree[-1][-1])
         prod_tree.append(line)
     
@@ -33,11 +36,14 @@ def batch_smooth_test(candidates, prod_primes, cst_1, cst_2):
 
     prod_tree[-1][0] = prod_primes%prod_tree[-1][0]
     for i in range(len(prod_tree)-1):
+
         for j in range(len(prod_tree[-i-1])-1):
             prod_tree[-i-2][(j<<1)] = prod_tree[-i-1][j]%prod_tree[-i-2][j<<1]
             prod_tree[-i-2][(j<<1)+1] = prod_tree[-i-1][j]%prod_tree[-i-2][(j<<1)+1]
+
         tmp = len(prod_tree[-i-1])-1
         prod_tree[-i-2][tmp<<1] = prod_tree[-i-1][tmp]%prod_tree[-i-2][tmp<<1]
+
         if (tmp<<1)+1 < len(prod_tree[-i-2]):
             prod_tree[-i-2][(tmp<<1)+1] = prod_tree[-i-1][tmp]%prod_tree[-i-2][(tmp<<1)+1]
 
@@ -53,10 +59,10 @@ def batch_smooth_test(candidates, prod_primes, cst_1, cst_2):
         else:
             tmp = candidates[i]//math.gcd(candidates[i],j)
             if tmp < cst_1:
-                smooth[i] = ["large",1,tmp]
+                smooth[i] = ["large", 1, tmp]
             elif tmp < cst_2 and fermat_primality(tmp):
                 tmp = pollard_rho(tmp)
-                smooth[i] = ["large",min(tmp),max(tmp)]
+                smooth[i] = ["large", min(tmp), max(tmp)]
             else: smooth[i] = [False]
             
     return smooth
@@ -87,8 +93,8 @@ def smooth_test(candidate, prime_base, const_1, const_2):
 # Pollard rho algorithm to factor small primes
 # This is used to find the two large primes when needed
 def pollard_rho(n):
-    a = int(random.randint(1,n-3))
-    s = int(random.randint(0,n-1))
+    a = int(random.randint(1, n-3))
+    s = int(random.randint(0, n-1))
     x = s
     y = s
     d = 1
@@ -96,12 +102,12 @@ def pollard_rho(n):
         e = 1
         X = x
         Y = y
-        for k in range(0,100):
+        for k in range(0, 100):
             x = (x*x+a)%n
             y = (y*y+a)%n
             y = (y*y+a)%n
             e = e*(x-y)%n
-        d = math.gcd(e,n)
+        d = math.gcd(e, n)
     if d == n:
         x = X
         y = Y
@@ -110,7 +116,7 @@ def pollard_rho(n):
             x = (x*x+a)%n
             y = (y*y+a)%n
             y = (y*y+a)%n
-            d = math.gcd(x-y,n)
+            d = math.gcd(x-y, n)
     if d == n:
         return pollard_rho(n)
     return d, n//d

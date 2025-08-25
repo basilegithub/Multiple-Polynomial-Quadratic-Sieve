@@ -13,7 +13,7 @@ def convert_to_binary_lanczos(z, smooth_number):
     return res
     
 # Compute the x and y from the null space vector
-def compute_solution(relation_set,smooth,z,n,primes):
+def compute_solution(relation_set, smooth, z, n, primes):
     vector_y = [0]*(len(primes)+1)
     x = 1
     y = 1
@@ -30,7 +30,7 @@ def compute_solution(relation_set,smooth,z,n,primes):
                     tmp2 *= primes[i]
     if (vector_y[0]>>1)&1:
         y = -1
-    for k in range(1,len(vector_y)):
-        y *= pow(primes[k-1],vector_y[k]>>1,n)
+    for k in range(1, len(vector_y)):
+        y *= pow(primes[k-1], vector_y[k]>>1, n)
         y %= n
     return x,y

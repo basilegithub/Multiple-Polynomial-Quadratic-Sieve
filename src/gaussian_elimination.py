@@ -1,5 +1,7 @@
 # This file contains the functions that perform gaussian elimination on a dense matrix
 
+from utils import lowest_set_bit
+
 def add_column_opt(M_opt, tgt, src):
     """For a matrix produced by siqs_build_matrix_opt, add the column
     src to the column target (mod 2).
@@ -29,20 +31,26 @@ def siqs_solve_matrix_opt(M_opt, n, m):
     """
     row_is_marked = [False] * n
     pivots = [-1] * m
+
     for j in range(m):
         i = find_pivot_column_opt(M_opt, j)
         if i is not None:
             pivots[j] = i
             row_is_marked[i] = True
+            
             for k in range(m):
                 if k != j and (M_opt[k] >> i) & 1:  # test M[i][k] == 1
                     add_column_opt(M_opt, k, j)
+
     perf_squares = []
     for i in range(n):
         if not row_is_marked[i]:
             perfect_sq_indices = [i]
+
             for j in range(m):
                 if (M_opt[j] >> i) & 1:  # test M[i][j] == 1
                     perfect_sq_indices.append(pivots[j])
+
             perf_squares.append(perfect_sq_indices)
+
     return perf_squares

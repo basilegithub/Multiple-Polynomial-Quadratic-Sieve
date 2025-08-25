@@ -14,14 +14,14 @@ def multiply_d(A, d):
     
 # Compute W_inv and the indices for d
 # Basically performs gaussian elimination
-def block(T,N):     
-    M = concatenate(T,identity(N), N)
+def block(T, N):     
+    M = concatenate(T, identity(N), N)
     S = []
     
     for j in range(N):
         for k in range(j,N):
             if (M[k] >> 2*N - j - 1)&1 != 0:
-                M[k],M[j] = M[j],M[k]
+                M[k], M[j] = M[j], M[k]
                 break
         
         if (M[j] >> 2*N - j -1)&1 != 0:
@@ -31,9 +31,9 @@ def block(T,N):
                         M[k] ^= M[j]
             S.append(j)
         else:
-            for k in range(j,N):
+            for k in range(j, N):
                 if (M[k] >> N - j - 1)&1 != 0:
-                    M[k],M[j] = M[j],M[k]
+                    M[k], M[j] = M[j], M[k]
                     break
                 
             if (M[j] >> N - j - 1)&1 == 0:
@@ -61,7 +61,7 @@ def block(T,N):
     
 # The whole block lanczos algorithm
 # See the README for sources
-def block_lanczos(B, base_size, nb_relations, N, LOG_PATH):
+def block_lanczos(B, nb_relations, N, LOG_PATH):
     Y = [random.randint(0, (1<<N)-1) for _ in range(nb_relations)]
 
     X = [0]*nb_relations
@@ -108,7 +108,7 @@ def block_lanczos(B, base_size, nb_relations, N, LOG_PATH):
         if matrix[i] == 0 and Z[i] != 0 and Z[i] not in solutions:
             solutions.append(Z[i])
     if len(solutions) == 0:
-        solutions = block_lanczos(B,N<<1,LOG_PATH)
+        solutions = block_lanczos(B, nb_relations, N<<1, LOG_PATH)
     return solutions
     
 # Performs gaussian elimination
@@ -118,8 +118,8 @@ def solve(matrix, block, nb_relations):
     for l in range(nb_relations):
         for i in range(k,len(matrix)):
             if (matrix[i] >> nb_relations - i - 1)&1 != 0:
-                matrix[k],matrix[i] = matrix[i], matrix[k]
-                block[k],block[i] = block[i], block[k]
+                matrix[k], matrix[i] = matrix[i], matrix[k]
+                block[k], block[i] = block[i], block[k]
                 k += 1
                 break
                 

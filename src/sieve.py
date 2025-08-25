@@ -13,18 +13,19 @@ def compute_skipped(skipped, logs, primes, prime_start):
 def sieve(L,poly_used,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3):
     # Sieve
     sieve = [0]*sieve_len
-    for i in range (prime_start,len(primes)):
+    for i in range (prime_start, len(primes)):
         p = primes[i]
         k = logs[i]
         if param[0][i]:
             z = ((-poly_used[1]+a[i])*param[0][i]+L)%p
-            for j in range(z,sieve_len,p):
+
+            for j in range(z, sieve_len,p):
                 sieve[j] += k
             z = (z+param[1][i])%p
         else:
-            z = (-poly_used[2]*invmod(tmp2,p)+L)%p
+            z = (-poly_used[2]*invmod(tmp2, p)+L)%p
         
-        for j in range(z,sieve_len,p): sieve[j] += k
+        for j in range(z, sieve_len, p): sieve[j] += k
          
     # identify candidates
     poly_eval = tmp3-tmp2*L+poly_used[2]

@@ -15,12 +15,13 @@ import multiprocessing
 def siever_batch(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len, skipped, prime_start, const_1, const_2, prod_primes):
     to_batch, values, coeff, block = [], [], [], []
     while True:
+
         try:
             poly_selected, param, moduli, needed, threshold = polynomials.get(timeout=0)
             poly_index = 0
             tmp1, tmp2, tmp3 = poly_selected[0]<<1, poly_selected[1]<<1, poly_selected[0]*b**2
             
-            tmp_block = sieve.sieve(b,poly_selected,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3)
+            tmp_block = sieve.sieve(b, poly_selected, logs, primes, a, n, param, sieve_len, skipped, prime_start, tmp1, tmp2, tmp3)
         
             to_batch += [abs(poly_selected[0]*i**2+tmp2*i+poly_selected[2]) for i in tmp_block]
             values += [poly_selected[0]*i+poly_selected[1] for i in tmp_block]
@@ -29,11 +30,11 @@ def siever_batch(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len, skippe
             block += tmp_block
             
             while poly_index < threshold:
-                poly_selected[1],poly_selected[2] = find_next_poly(poly_index,moduli,n,poly_selected,needed)
+                poly_selected[1],poly_selected[2] = find_next_poly(poly_index, moduli, n, poly_selected, needed)
                 tmp2 = poly_selected[1]<<1
                 poly_index += 1
                 
-                tmp_block = sieve.sieve(b,poly_selected,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3)
+                tmp_block = sieve.sieve(b, poly_selected, logs, primes, a, n, param, sieve_len, skipped, prime_start, tmp1, tmp2, tmp3)
             
                 to_batch += [abs(poly_selected[0]*i**2+tmp2*i+poly_selected[2]) for i in tmp_block]
                 values += [poly_selected[0]*i+poly_selected[1] for i in tmp_block]
@@ -42,18 +43,17 @@ def siever_batch(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len, skippe
                 block += tmp_block
                 
                 if len(block) > 512:
-                    smooth = find_smooth.batch_smooth_test(to_batch,prod_primes,const_1,const_2)
+                    smooth = find_smooth.batch_smooth_test(to_batch, prod_primes, const_1, const_2)
                     tmp_index = 0
                     for z in range(len(coeff)):
-                        coeff1 = coeff[z][0]
-                        coeff2 = coeff[z][1]
                         for i in range(coeff[z][2]):
                             tmp_smooth = smooth[tmp_index+i]
                             value = values[tmp_index+i]
+
                             if tmp_smooth[0] == True:
-                                tmp_rels.put([value,value*value-n,True])
+                                tmp_rels.put([value, value*value-n, True])
                             elif tmp_smooth[0] == "large":
-                                tmp_rels.put([value,value*value-n,False,tmp_smooth[1],tmp_smooth[2]])
+                                tmp_rels.put([value, value*value-n, False, tmp_smooth[1], tmp_smooth[2]])
                                 
                         tmp_index += coeff[z][2]
                         
@@ -77,19 +77,19 @@ def siever(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len, skipped, pri
             coeff3 = poly_selected[2]
             tmp = coeff2<<1
             
-            smooth = sieve.sieve(b,poly_selected,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3)
+            smooth = sieve.sieve(b, poly_selected, logs, primes, a, n, param, sieve_len, skipped, prime_start, tmp1, tmp2, tmp3)
         
             for i in smooth:
-                tmp_smooth = find_smooth.smooth_test(coeff1*i*i+tmp*i+coeff3,primes,const_1,const_2)
+                tmp_smooth = find_smooth.smooth_test(coeff1*i*i+tmp*i+coeff3, primes, const_1, const_2)
                 value = coeff1*i+coeff2
         
                 if tmp_smooth[0] == True:
-                    tmp_rels.put([value,value*value-n,True])
+                    tmp_rels.put([value, value*value-n, True])
                 elif tmp_smooth[0] == "large":
-                    tmp_rels.put([value,value*value-n,False,tmp_smooth[1],tmp_smooth[2]])
+                    tmp_rels.put([value, value*value-n, False, tmp_smooth[1], tmp_smooth[2]])
             
             while poly_index < threshold:
-                poly_selected[1],poly_selected[2] = find_next_poly(poly_index,moduli,n,poly_selected,needed)
+                poly_selected[1],poly_selected[2] = find_next_poly(poly_index, moduli, n, poly_selected, needed)
                 tmp2 = poly_selected[1]<<1
                 poly_index += 1
                 
@@ -98,16 +98,16 @@ def siever(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len, skipped, pri
                 coeff3 = poly_selected[2]
                 tmp = coeff2<<1
                 
-                smooth = sieve.sieve(b,poly_selected,logs,primes,a,n,param,sieve_len,skipped,prime_start,tmp1,tmp2,tmp3)
+                smooth = sieve.sieve(b, poly_selected, logs, primes, a, n, param, sieve_len, skipped, prime_start, tmp1, tmp2, tmp3)
             
                 for i in smooth:
-                    tmp_smooth = find_smooth.smooth_test(coeff1*i*i+tmp*i+coeff3,primes,const_1,const_2)
+                    tmp_smooth = find_smooth.smooth_test(coeff1*i*i+tmp*i+coeff3, primes, const_1, const_2)
                     value = coeff1*i+coeff2
             
                     if tmp_smooth[0] == True:
-                        tmp_rels.put([value,value*value-n,True])
+                        tmp_rels.put([value, value*value-n, True])
                     elif tmp_smooth[0] == "large":
-                        tmp_rels.put([value,value*value-n,False,tmp_smooth[1],tmp_smooth[2]])
+                        tmp_rels.put([value, value*value-n, False, tmp_smooth[1], tmp_smooth[2]])
         except:
             pass
 
@@ -119,7 +119,7 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
     size_partials = 0
     parent = {}
     
-    partial_found, full_found, skipped, last, sieve_len = 0, 0, 0, primes[-1], (b<<1)+1
+    partial_found, full_found, skipped, sieve_len = 0, 0, 0, (b<<1)+1
     const_1 = const*primes[-1]
     const_2 = const*primes[-1]**2
     skipped += int(math.log2(const_2))
@@ -129,14 +129,16 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
     polynomials = multiprocessing.Queue()
     tmp_rels = multiprocessing.Queue()
     cpu, sievers = min(NB_CPU, multiprocessing.cpu_count()),[]
-    while polynomials.qsize() < 2*(cpu-1): polynomials.put(find_poly(n,primes,a,bounds,target))
+    while polynomials.qsize() < 2*(cpu-1): polynomials.put(find_poly(n, primes, a, bounds, target))
     
     
     for _ in range(cpu-1):
         if flag_use_batch_smooth_test:
-            pro = multiprocessing.Process(target=siever_batch,args=(polynomials,tmp_rels,b,n,logs,primes,a,sieve_len,skipped,prime_start,const_1,const_2,prod_primes))
+            pro = multiprocessing.Process(target=siever_batch,args=(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len,
+                                                                    skipped, prime_start, const_1, const_2, prod_primes))
         else:
-            pro = multiprocessing.Process(target=siever,args=(polynomials,tmp_rels,b,n,logs,primes,a,sieve_len,skipped,prime_start,const_1,const_2))
+            pro = multiprocessing.Process(target=siever,args=(polynomials, tmp_rels, b, n, logs, primes, a, sieve_len,
+                                                              skipped, prime_start, const_1, const_2))
         sievers.append(pro)
         pro.start()
     
@@ -144,7 +146,7 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
         
     sys.stdout.write('\r'+"0/("+str(len(primes)+1)+"+10) relations found")
     while len(relations) <= len(primes)+10:
-        while polynomials.qsize() < 2*(cpu-1): polynomials.put(find_poly(n,primes,a,bounds,target))
+        while polynomials.qsize() < 2*(cpu-1): polynomials.put(find_poly(n, primes, a, bounds, target))
         
         try:
             rel = tmp_rels.get(timeout=0)
@@ -155,7 +157,9 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
             else:
                 tmp_smooth = ["large", rel[3], rel[4]]
                 
-            relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, parent = handle_possible_smooth(value,tmp_smooth,full_found,partial_found,relations,smooth_number,partial_relations,possible_smooth,graph,size_partials,parent,cycle_len,n)
+            relations, smooth_number, partial_relations, possible_smooth, full_found, partial_found, graph, size_partials, parent = handle_possible_smooth(value, tmp_smooth, full_found, partial_found, relations, smooth_number,
+                                                                                                                                                           partial_relations, possible_smooth, graph, size_partials, parent,
+                                                                                                                                                           cycle_len, n)
 
         except:
             pass
