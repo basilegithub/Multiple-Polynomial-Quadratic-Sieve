@@ -99,7 +99,6 @@ def find_null_space_and_compute_factors(relations, smooth_number, primes, n, fla
                 if flag_lanczos:
                     vector = compute_solutions.convert_to_binary_lanczos(vector, smooth_number)
                 x,y = compute_solutions.compute_solution(relations, smooth_number, vector, n, primes)
-                print(math.gcd(x-y, n), math.gcd(x+y, n))
                 if x != y and math.gcd(x-y,n) != 1 and math.gcd(x+y,n) != 1:
                     print_final_message(x, y, n, time_1, LOG_PATH)
                     return str(time.localtime()[3])+":"+str(time.localtime()[4])+":"+str(time.localtime()[5]), math.gcd(x-y,n), math.gcd(x+y,n)
