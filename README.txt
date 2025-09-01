@@ -48,15 +48,15 @@ A suitable command looks like "python main.py --n [your_number]"
 
 I have defined a few parameters directly you can edit in the config file.
 
-- batch_smooth_test: If True, the batch smoothness test from Bernstein will be used. Otherwise, the naive (trial division from the prime factor base) approach will be used. Batch smoothness test is generally faster
+- FLAG_BATCH_SMOOTH_TEST: If True, the batch smoothness test from Bernstein will be used. Otherwise, the naive (trial division from the prime factor base) approach will be used. Batch smoothness test is generally faster
 
-- gaussian_pivot: If True, gaussian elimination will ALWAYS be used in the linear algebra step. If you want to use block Lanczos of Wiedemann algorithms, this has to be set to False.
+- FLAG_GAUSSIAN_PIVOT: If True, gaussian elimination will ALWAYS be used in the linear algebra step. If you want to use block Lanczos of Wiedemann algorithms, this has to be set to False.
 
-- lanczos: If True, the block Lanczos algorithm will be used. If False, the Wiedemann algorithm will be used. No matter its value, if gaussian_pivot is True then gaussian elimination will be performed.
+- FLAG_LANCZOS: If True, the block Lanczos algorithm will be used. If False, the Wiedemann algorithm will be used. No matter its value, if gaussian_pivot is True then gaussian elimination will be performed.
 
-- large_primes_constant: Define the constant that will be multiplied by the last prime in the factor base to obtain the bound for the single large primes. For the double large primes, the bound is this constant multiplied by the last prime in the factor base squared.
+- LARGE_PRIME_CONST: Define the constant that will be multiplied by the last prime in the factor base to obtain the bound for the single large primes. For the double large primes, the bound is this constant multiplied by the last prime in the factor base squared.
 
-- block_size: If Block Lanczos or Wiedemann algorithm are used, this sets the block size. In the Wiedemann algorithm, this is only used to compute many matrix-vector products at once, and not to compute the matrix generator of the matrix sequence you obtain.
+- BLOCK_SIZE: If Block Lanczos or Wiedemann algorithm are used, this sets the block size. In the Wiedemann algorithm, this is only used to compute many matrix-vector products at once, and not to compute the matrix generator of the matrix sequence you obtain.
 
 - NB_CPU: Sets the number of cpu used for sieving. One cpu is always kept as a "leader" that collects relations from the sievers, and the rest of the cpus sieve, test for smoothness, and send their candidate relations to the leader.
 

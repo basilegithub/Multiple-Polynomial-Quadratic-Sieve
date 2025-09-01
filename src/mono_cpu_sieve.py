@@ -57,7 +57,7 @@ def sieve_and_smooth(relations, smooth_number, full_found, partial_relations, pa
         
     return relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, graph, size_partials, parent
 
-def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_use_batch_smooth_test, n, LOG_PATH):
+def find_relations(primes, CONST_LARGE_PRIME, prod_primes, bounds, target, logs, a, b, FLAG_USE_BATCH_SMOOTH_TEST, n, LOG_PATH):
     log.write_log(LOG_PATH, "sieving...")
     log.write_log(LOG_PATH, "need to find at least "+str(len(primes)+10)+" relations")
     
@@ -67,8 +67,8 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
     parent = {}
     
     partial_found, full_found, skipped, sieve_len = 0, 0, 0, (b<<1)+1
-    const_1 = const*primes[-1]
-    const_2 = const*primes[-1]**2
+    const_1 = CONST_LARGE_PRIME*primes[-1]
+    const_2 = CONST_LARGE_PRIME*primes[-1]**2
     skipped += int(math.log2(const_2))
     prime_start = 30
     skipped = sieve.compute_skipped(skipped, logs, primes, prime_start)
@@ -91,7 +91,7 @@ def find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_
 
         tmp2 = poly_selected[1]<<1
         
-        if flag_use_batch_smooth_test:
+        if FLAG_USE_BATCH_SMOOTH_TEST:
             relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth, block, coeff, to_batch, graph, size_partials, parent = sieve_and_batch_smooth(relations, smooth_number, full_found, partial_relations, partial_found, possible_smooth,
                                                                                                                                                                                    graph, a, b, poly_selected, coeff, logs, primes, param, sieve_len, skipped, prime_start,
                                                                                                                                                                                    prod_primes, const_1, const_2, tmp1, tmp2, tmp3, block, to_batch, size_partials, parent,

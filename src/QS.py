@@ -72,8 +72,8 @@ def initialize(n):
     
     return b, primes, a, logs, prod_primes, target
     
-def find_null_space_and_compute_factors(relations, smooth_number, primes, n, flag_gaussian_pivot, flag_lanczos, BLOCK_SIZE, LOG_PATH):
-    if not flag_gaussian_pivot:
+def find_null_space_and_compute_factors(relations, smooth_number, primes, n, FLAG_GAUSSIAN_PIVOT, FLAG_LANCZOS, BLOCK_SIZE, LOG_PATH):
+    if not FLAG_GAUSSIAN_PIVOT:
     
         bin_matrix = build_sparse_matrix(relations, primes)
         
@@ -88,7 +88,7 @@ def find_null_space_and_compute_factors(relations, smooth_number, primes, n, fla
         mini_poly_estim = 1
         
         while True:
-            if flag_lanczos:
+            if FLAG_LANCZOS:
                 null_space = block_lanczos(bin_matrix, len(smooth_number), BLOCK_SIZE, LOG_PATH)
             else:
                 null_space, mini_poly_estim = wiedemann(bin_matrix, len(relations), BLOCK_SIZE, mini_poly_estim)
@@ -96,9 +96,9 @@ def find_null_space_and_compute_factors(relations, smooth_number, primes, n, fla
             
             log.write_log(LOG_PATH, "attempt "+str(nb_attempts)+": "+str(len(null_space))+" kernel vectors found")
             for vector in null_space:
-                if flag_lanczos:
+                if FLAG_LANCZOS:
                     vector = compute_solutions.convert_to_binary_lanczos(vector, smooth_number)
-                x,y = compute_solutions.compute_solution(relations, smooth_number, vector, n, primes)
+                x, y = compute_solutions.compute_solution(relations, smooth_number, vector, n, primes)
                 if x != y and math.gcd(x-y,n) != 1 and math.gcd(x+y,n) != 1:
                     print_final_message(x, y, n, time_1, LOG_PATH)
                     return str(time.localtime()[3])+":"+str(time.localtime()[4])+":"+str(time.localtime()[5]), math.gcd(x-y,n), math.gcd(x+y,n)
@@ -115,7 +115,7 @@ def find_null_space_and_compute_factors(relations, smooth_number, primes, n, fla
         for z in null_space:
             bin_encoding = compute_solutions.convert_to_binary(z, smooth_number)
 
-            x,y = compute_solutions.compute_solution(relations, smooth_number, bin_encoding, n, primes)
+            x, y = compute_solutions.compute_solution(relations, smooth_number, bin_encoding, n, primes)
 
             if x != y and math.gcd(x-y,n) != 1 and math.gcd(x+y,n) != 1:
                 print_final_message(x, y, n, time_1, LOG_PATH)
@@ -128,10 +128,10 @@ def QS(n):
     
     parameters = parse_config.parse_config(CONFIG_PATH)
     
-    flag_use_batch_smooth_test = parameters[0].lower() in ["true"]
-    flag_gaussian_pivot = parameters[1].lower() in ["true"]
-    flag_lanczos = parameters[2].lower() in ["true"]
-    const = int(parameters[3])
+    FLAG_USE_BATCH_SMOOTH_TEST = parameters[0].lower() in ["true"]
+    FLAG_GAUSSIAN_PIVOT = parameters[1].lower() in ["true"]
+    FLAG_LANCZOS = parameters[2].lower() in ["true"]
+    CONST_LARGE_PRIME = int(parameters[3])
     BLOCK_SIZE = int(parameters[4])
     NB_CPU = int(parameters[5])
     
@@ -147,9 +147,9 @@ def QS(n):
     log.write_log(LOG_PATH, "factor base created : "+str(len(primes))+" primes\n")
     
     if NB_CPU == 1:
-        relations, smooth_number = mono_cpu_sieve.find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_use_batch_smooth_test, n, LOG_PATH)
+        relations, smooth_number = mono_cpu_sieve.find_relations(primes, CONST_LARGE_PRIME, prod_primes, bounds, target, logs, a, b, FLAG_USE_BATCH_SMOOTH_TEST, n, LOG_PATH)
     
     else:
-        relations, smooth_number = multi_cpu_sieve.find_relations(primes, const, prod_primes, bounds, target, logs, a, b, flag_use_batch_smooth_test, n, LOG_PATH, NB_CPU)
+        relations, smooth_number = multi_cpu_sieve.find_relations(primes, CONST_LARGE_PRIME, prod_primes, bounds, target, logs, a, b, FLAG_USE_BATCH_SMOOTH_TEST, n, LOG_PATH, NB_CPU)
     
-    return find_null_space_and_compute_factors(relations, smooth_number, primes, n, flag_gaussian_pivot, flag_lanczos, BLOCK_SIZE, LOG_PATH)
+    return find_null_space_and_compute_factors(relations, smooth_number, primes, n, FLAG_GAUSSIAN_PIVOT, FLAG_LANCZOS, BLOCK_SIZE, LOG_PATH)

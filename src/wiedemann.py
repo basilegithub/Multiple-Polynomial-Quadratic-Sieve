@@ -53,7 +53,7 @@ def compute_kernel_vectors(block, A, poly, n, block_size):
     for i in range(poly.bit_length()-1, 0, -1):
         tmp = (poly >> i)&1
         for j in range(n): res[j] ^= block[j]*tmp
-        res = sparse_multiply(A,res)
+        res = sparse_multiply(A, res)
 
     tmp = poly&1
     for j in range(n): res[j] ^= block[j]*tmp
@@ -96,7 +96,7 @@ def wiedemann(A, n, block_size, mini_poly_estim):
     if mini_poly_estim.bit_length()-1 < len(A):
         block = sparse_multiply(A, block)
         # Sample random left projection
-        tmp = [random.randint(0,1) for i in range(n)]
+        tmp = [random.randint(0, 1) for i in range(n)]
         lbd = []
         for i in range(n):
             if tmp[i]: lbd.append(i) # sparse encoding of the left projection tmp
